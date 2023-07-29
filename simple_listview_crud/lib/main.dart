@@ -17,8 +17,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Contact> contactList = List.empty(growable: true);
-  TextEditingController _controllerName = TextEditingController();
-  TextEditingController _controllerNumber = TextEditingController();
+  final TextEditingController _controllerName = TextEditingController();
+  final TextEditingController _controllerNumber = TextEditingController();
+
+  int selectedIndex = -1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     if (name.isNotEmpty && number.isNotEmpty) {
                       setState(() {
+                        if (selectedIndex != -1) {
+                          return;
+                        }
                         _controllerName.text = "";
                         _controllerNumber.text = "";
 
@@ -85,7 +90,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Text(" Save "),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    String name = _controllerName.text.trim();
+                    String number = _controllerNumber.text.trim();
+                    if (name.isNotEmpty && number.isNotEmpty) {
+                      setState(() {
+                        _controllerName.text = '';
+                        _controllerNumber.text = '';
+                        contactList[selectedIndex].name = name;
+                        contactList[selectedIndex].number = number;
+                        selectedIndex = -1;
+                      });
+                    }
+                  },
                   child: const Text(" Update "),
                 ),
               ],
@@ -109,14 +126,45 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget myWidget(int index) => Card(
         child: ListTile(
           leading: CircleAvatar(
-            backgroundColor: Colors.white,
-            child: Text(contactList[index].name[0].toUpperCase()),
+            backgroundColor: (index % 2 == 0)
+                ? Colors.blue
+                : const Color.fromARGB(255, 2, 29, 52),
+            child: Text(
+              contactList[index].name[0].toUpperCase(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(contactList[index].name),
               Text(contactList[index].number)
             ],
+          ),
+          trailing: SizedBox(
+            width: 70,
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _controllerName.text = contactList[index].name;
+                      _controllerNumber.text = contactList[index].number;
+                      selectedIndex = index;
+                    });
+                  },
+                  child: const Icon(Icons.edit),
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      contactList.removeAt(index);
+                    });
+                  },
+                  child: const Icon(Icons.delete),
+                ),
+              ],
+            ),
           ),
         ),
       );
